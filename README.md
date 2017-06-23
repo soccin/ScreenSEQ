@@ -35,3 +35,24 @@ If there is a well defined position this should find it. Use this in the next st
 
 ## Count library sequences
 
+Once you know the `START_POS` and `SEQ_LEN` of the library you can count the number of screen sequences with `parseScreen.sh`:
+```{bash}
+$ ./parseScreen.sh 
+usage: parseScreen.sh START_POS SEQ_LEN FASTQ
+$ 
+```
+
+Use the following to loop over all FASTQ files in a mapping file and submit to cluster.
+```{bash}
+cat Proj_*_sample_mapping.txt \
+	| cut -f4 \
+	| xargs -n 1 -I % find % -name '*_R1_*.fastq.gz' \
+	| xargs -n 1 bsub -o LSF/ -J PARSE -We 59 \
+		./parseScreen.sh $START_POS $SEQ_LEN 
+```
+
+Note this only processes the R1 reads and will only work correct if there is one FASTQ block per sample.
+
+When finished the count files will be in the `LibCounts` directory.
+
+
