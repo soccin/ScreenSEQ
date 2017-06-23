@@ -3,8 +3,9 @@
 FASTXBIN=/opt/common/CentOS_6/fastx_toolkit/fastx_toolkit-0.0.13
 GMAPPER=/ifs/work/socci/bin/gmapper-ls
 
+USAGE="usage: findScreenPos.sh SCREEN_GENOME SGRNA_LEN FASTQ"
 if [ "$#" != "3" ]; then
-    echo usage: findScreenPos.sh SCREEN_GENOME SGRNA_LEN FASTQ
+    echo $USAGE
     exit
 fi
 
@@ -20,8 +21,25 @@ zcat $FASTQ \
     | ./getSubSeq.py $SGRNA_LEN \
     >test.fasta
 
+if [ "$?" != "0" ]; then
+    echo
+    echo "FATAL ERROR"
+    echo
+    echo $USAGE
+    echo
+    exit
+fi
+
+
 $GMAPPER --strata test.fasta $GENOME >testmap.sam
+
+echo
+echo
+echo
+
 cat testmap.sam \
     | fgrep NM:i:0 | fgrep ${SGRNA_LEN}M \
     | cut -f1 | sed 's/.*_//' \
-    | sort | uniq -c | sort -nr | head
+    | sort | uniq -c | sort -nr \
+    | awk '{printf("%d\t%d\n",$2,$1)}' \
+    | tee posStats.txt | head
