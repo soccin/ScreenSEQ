@@ -9,9 +9,10 @@ require(xlsx)
 #
 # Customise to format of library file
 #
-lib=read_csv("human-druggable-top5.csv")
-colnames(lib)=c("Gene","Seq","Flag")
-projectNo="proj07665"
+stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
+##lib=read_csv("human-druggable-top5.csv")
+##colnames(lib)=c("Gene","Seq","Flag")
+##projectNo="proj07665"
 #############################################################################
 
 lib %>%
