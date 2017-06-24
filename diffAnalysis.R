@@ -31,7 +31,7 @@ gNames=sort(levels(y$samples$group),decreasing=T)
 contrast=paste(paste0(gNames,collapse="Vs"),"=",paste0(gNames,collapse="-"))
 cm=makeContrasts(contrast,levels=design)
 
-pdf(cc(projectNo,"_DiffAnalysis.pdf"))
+pdf(cc(projectNo,"DiffAnalysis.pdf"))
 
 boxplot(log2(cpm(y,normalize=T)+1))
 plotMDS(y)
@@ -49,8 +49,8 @@ topIds=rownames(tbl)[seq(nSig)]
 plotSmear(lrt,de.tags=topIds,pch=20,cex=0.6)
 abline(h=c(-1,0,1),col=c("dodgerblue","yellow","dodgerblue"),lty=2)
 
-write.xlsx2(topTags(lrt,n=nSig)$table,
-    cc(projectNo,"_DiffAnalysis.xlsx"),sheetName="ProbeLevel")
+OUTXLSX=cc(projectNo,"DiffAnalysis.xlsx")
+write.xlsx2(topTags(lrt,n=nSig)$table,OUTXLSX,sheetName="ProbeLevel")
 
 probes=rownames(y$counts)
 genes=gsub(".\\d+$","",probes)
@@ -70,6 +70,6 @@ abline(v=c(-1,0,1),lty=2,lwd=2,col=8)
 points(gsa$logFC,gsa$PValue)
 points(topGSA$logFC,topGSA$PValue,col="#FF8888",pch=19,cex=.8)
 
-write.xlsx2(topGSA,cc(projectNo,"_DiffAnalysis.xlsx"),sheetName="GeneLevel",append=T)
+write.xlsx2(topGSA,OUTXLSX,sheetName="GeneLevel",append=T)
 
 dev.off()

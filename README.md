@@ -67,5 +67,13 @@ When run you will get:
 
 Check `$PROJNO_STATS.xlsx` for %-counted and if differential analysis is to be done add a `Group` column with group names.
 
+## Differential Analysis
+
+If the `Group` column has been added to the STATS.xlsx file then:
+```
+Rscript --no-save diffAnalysis.R
+```
+should run the analysis. Check the plots to make sure the normalization worked. 
+
 
 
