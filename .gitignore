@@ -3,3 +3,10 @@ test.fasta
 testmap.sam
 Construct
 *_sample_mapping.txt
+LSF/
+LibCounts/
+._*
+*_COUNTS.rda
+*_CountTable.csv
+*_STATS.xlsx
+~$*

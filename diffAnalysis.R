@@ -10,12 +10,8 @@ dataFile=dir(pattern="_COUNTS.rda")
 load(dataFile)
 projectNo=gsub("_COUNTS.rda","",dataFile)
 
-na2zero<-function(x){ifelse(is.na(x),0,x)}
-
-dat %<>% mutate_each(funs(na2zero),5:ncol(dat))
 dat %<>% filter((dat %>% select(5:ncol(dat)) %>% rowSums)>10)
 
-write.csv(as.data.frame(dat),cc(projectNo,"_CountTable.csv"),row.names=F)
 
 dat %>% select(5:ncol(dat)) %>% data.frame -> ds
 rownames(ds)=dat$ProbeID

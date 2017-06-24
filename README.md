@@ -55,4 +55,17 @@ Note this only processes the R1 reads and will only work correct if there is one
 
 When finished the count files will be in the `LibCounts` directory.
 
+## Join Count File for analysis
+
+Use the R script `loadData.R` to parse the count files, join them with the library sequences and make a library count table. Again due to the different formats for the library files you need to customize the reading of it before running the script. 
+
+When run you will get:
+
+* `$PROJNO__CountTable.csv`
+* `$PROJNO_COUNTS.rda`
+* `$PROJNO_STATS.xlsx`
+
+Check `$PROJNO_STATS.xlsx` for %-counted and if differential analysis is to be done add a `Group` column with group names.
+
+
 
