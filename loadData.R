@@ -15,7 +15,7 @@ stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
 ##lib=read_csv("human-druggable-top5.csv")
 ##colnames(lib)=c("Gene","Seq","Flag")
 
-# lib variable must have 3 columns
+# dat variable must have 3 columns
 #   Seq
 #   Gene
 #   ProbeID
