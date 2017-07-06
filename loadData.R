@@ -10,15 +10,28 @@ require(xlsx)
 # Customise to format of library file
 #
 stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
+
+##projectNo="proj07665"
 ##lib=read_csv("human-druggable-top5.csv")
 ##colnames(lib)=c("Gene","Seq","Flag")
-##projectNo="proj07665"
-#############################################################################
 
-lib %>%
-    group_by(Gene) %>%
-    mutate(ProbeID=paste0(Gene,".",row_number())) %>%
-     ungroup() -> dat
+# lib variable must have 3 columns
+#   Seq
+#   Gene
+#   ProbeID
+#
+# where multiple ProbeID's resolve multiple genes in the 
+# format:
+#   GENE_NAME.NUMBER_TAG
+#
+# a (.) can __NOT__ appear in the GENE_NAME
+
+##lib %>%
+##    group_by(Gene) %>%
+##    mutate(ProbeID=paste0(Gene,".",row_number())) %>%
+##    ungroup() -> dat
+
+#############################################################################
 
 rawCounts=NULL
 for(fname in dir("LibCounts",full.names=T)) {
