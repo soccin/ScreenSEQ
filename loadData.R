@@ -12,8 +12,7 @@ require(xlsx)
 stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
 
 ##projectNo="proj07665"
-##lib=read_csv("human-druggable-top5.csv")
-##colnames(lib)=c("Gene","Seq","Flag")
+##lib=read_csv("PrepLibrary/Human_GeCKOv2_LibA,B__Collapsed.csv")
 
 # dat variable must have 3 columns
 #   Seq
@@ -26,10 +25,11 @@ stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
 #
 # a (.) can __NOT__ appear in the GENE_NAME
 
-##lib %>%
-##    group_by(Gene) %>%
-##    mutate(ProbeID=paste0(Gene,".",row_number())) %>%
-##    ungroup() -> dat
+## lib %>%
+##     mutate(Gene=gsub("\\.","_",Gene)) %>%
+##     group_by(Gene) %>%
+##     mutate(ProbeID=paste0(Gene,".",row_number())) %>%
+##     ungroup() -> dat
 
 #############################################################################
 
