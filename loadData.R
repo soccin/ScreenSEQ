@@ -20,7 +20,7 @@ stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
 #   Gene
 #   ProbeID
 #
-# where multiple ProbeID's resolve multiple genes in the 
+# where multiple ProbeID's resolve multiple genes in the
 # format:
 #   GENE_NAME.NUMBER_TAG
 #
@@ -34,7 +34,8 @@ stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
 #############################################################################
 
 rawCounts=NULL
-for(fname in dir("LibCounts",full.names=T)) {
+countFiles=dir("LibCounts",full.names=T)
+for(fname in countFiles) {
     cat(fname,"\n")
     counts=read_tsv(fname,col_names=c("Counts","Seq"))
     dat %<>% left_join(counts,by="Seq")
@@ -49,7 +50,7 @@ for(fname in dir("LibCounts",full.names=T)) {
 }
 
 na2zero<-function(x){ifelse(is.na(x),0,x)}
-dat %<>% mutate_each(funs(na2zero),5:ncol(dat))
+dat %<>% mutate_each(funs(na2zero),(ncol(dat)-length(countFiles)+1):ncol(dat))
 write.csv(as.data.frame(dat),cc(projectNo,"CountTable.csv"),row.names=F)
 
 libTotals=dat[,-(1:4)] %>% summarize_each(funs(sum))
