@@ -53,7 +53,8 @@ na2zero<-function(x){ifelse(is.na(x),0,x)}
 dat %<>% mutate_each(funs(na2zero),(ncol(dat)-length(countFiles)+1):ncol(dat))
 write.csv(as.data.frame(dat),cc(projectNo,"CountTable.csv"),row.names=F)
 
-libTotals=dat[,-(1:4)] %>% summarize_each(funs(sum))
+libTotals=dat[,-(1:(ncol(dat)-length(countFiles)))] %>% summarize_each(funs(sum))
+
 totalCounts=rawCounts[,-1] %>% summarize_each(funs(sum(.,na.rm=T)))
 
 bind_rows(libTotals,totalCounts) %>%
