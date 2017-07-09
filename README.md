@@ -12,13 +12,25 @@ If the position of the seq in the read is know then skip to next section. If not
 3. What the strand is
 
 First convert the library to fasta format and pipe this to `mkPseudoGenome.py` to get a genome of library sequences. No code for this yet since libraries do not seem to have a standard format. An example:
+```
+head Human_GeCKOv2_LibA,B__Collapsed.csv
+Seq,Gene
+AAAAAAAAAAAGTCGTACTT,hsa-mir-3129
+AAAAAAAAACTCCAAAACCC,hsa-mir-4329
+AAAAAAAAAGGTCAAGCATT,SPAG9
+AAAAAAAGTCTCGTTATGAA,RERE
+AAAAAAATCAGCCACGCGAC,MRGPRX4
+```
+
+script 
+
 ```{bash}
 mkdir Construct
-cat human-druggable-top5.csv \
-	| fgrep -v Gene.Symbol \
-	| awk -F',' '{print ">"$1"."++s"\n"$2}' \
-	| ./mkPseudoGenome.py human-druggable-top5 \
-	>Construct/human-druggable-top5.fa
+cat Human_GeCKOv2_LibA,B__Collapsed.csv \
+	| fgrep -v Seq,Gene \
+	| awk -F',' '{print ">"$2"."++s"\n"$1}' \
+	| ./mkPseudoGenome.py Human_GeCKOv2_LibA,B \
+	>Construct/Human_GeCKOv2_LibA,B.fa
 ```
 
 _N.B._ `mkPseudoGenome.py` will output the length of the screen library sequences. If they are not all the same this code will not work as is.
