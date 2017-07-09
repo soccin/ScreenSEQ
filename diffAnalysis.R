@@ -10,15 +10,18 @@ dataFile=dir(pattern="_COUNTS.rda")
 load(dataFile)
 projectNo=gsub("_COUNTS.rda","",dataFile)
 
-dat %<>% filter((dat %>% select(5:ncol(dat)) %>% rowSums)>10)
-
-
-dat %>% select(5:ncol(dat)) %>% data.frame -> ds
-rownames(ds)=dat$ProbeID
-
-
 keyFile=dir(pattern="^p.*_STATS.xlsx")
 key=read.xlsx(keyFile,sheetIndex=1)
+nSamps=nrow(key)
+
+if(is.null(key$Group)) {
+    cat("\n    ERROR: Need to assign Group variable in key/stats file\n\n")
+    quit()
+}
+
+dat %<>% filter((dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% rowSums)>10)
+dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% data.frame -> ds
+rownames(ds)=dat$ProbeID
 group=factor(key$Group[match(colnames(ds),key$Sample)])
 
 y <- DGEList(counts=ds,group=group)
