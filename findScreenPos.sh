@@ -2,6 +2,7 @@
 
 FASTXBIN=/opt/common/CentOS_6/fastx_toolkit/fastx_toolkit-0.0.13
 GMAPPER=/ifs/work/socci/bin/gmapper-ls
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 USAGE="usage: findScreenPos.sh SCREEN_GENOME SGRNA_LEN FASTQ"
 if [ "$#" != "3" ]; then
@@ -18,7 +19,7 @@ zcat $FASTQ \
     | $FASTXBIN/fastq_to_fasta -Q33 \
     | head -10000 \
     | fgrep -v ">" \
-    | ./getSubSeq.py $SGRNA_LEN \
+    | $SDIR/getSubSeq.py $SGRNA_LEN \
     >test.fasta
 
 if [ "$?" != "0" ]; then
