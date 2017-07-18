@@ -1,9 +1,9 @@
-library(dplyr)
+require(dplyr)
 require(readr)
 require(tidyr)
 require(tibble)
 require(magrittr)
-library(xlsx)
+require(readxl)
 require(edgeR)
 
 dataFile=dir(pattern="_COUNTS.rda")
@@ -11,7 +11,7 @@ load(dataFile)
 projectNo=gsub("_COUNTS.rda","",dataFile)
 
 keyFile=dir(pattern="^p.*_STATS.xlsx")
-key=read.xlsx(keyFile,sheetIndex=1)
+key=read_xlsx(keyFile,sheet=1)
 nSamps=nrow(key)
 
 if(is.null(key$Group)) {
@@ -52,8 +52,22 @@ topIds=rownames(tbl)[seq(nSig)]
 plotSmear(lrt,de.tags=topIds,pch=20,cex=0.6)
 abline(h=c(-1,0,1),col=c("dodgerblue","yellow","dodgerblue"),lty=2)
 
+require(xlsx)
 OUTXLSX=cc(projectNo,"DiffAnalysis.xlsx")
-write.xlsx2(topTags(lrt,n=nSig)$table,OUTXLSX,sheetName="ProbeLevel")
+
+ans=topTags(lrt,n=nSig)$table
+dn=cpm(y)
+pseudo=min(dn[dn>0])
+
+avgCounts=t(apply(dn[rownames(ans),],1,function(x){2^tapply(log2(x+pseudo),group,mean)-pseudo}))
+avgAll=2^(apply(log2(dn[rownames(ans),]+pseudo),1,mean))-pseudo
+logFC=ans$logFC
+FC=ifelse(logFC<0,2^(-logFC),2^logFC)
+libDat=dat[match(rownames(ans),dat$ProbeID),c(1,2,3)]
+
+ans1=cbind(libDat,FC,ans[,c(1,4,5)],avgAll,avg=avgCounts)
+
+write.xlsx2(ans1,OUTXLSX,sheetName="ProbeLevel",row.names=F)
 
 probes=rownames(y$counts)
 genes=gsub(".\\d+$","",probes)
@@ -73,6 +87,7 @@ abline(v=c(-1,0,1),lty=2,lwd=2,col=8)
 points(gsa$logFC,gsa$PValue)
 points(topGSA$logFC,topGSA$PValue,col="#FF8888",pch=19,cex=.8)
 
+dev.off()
+
 write.xlsx2(topGSA,OUTXLSX,sheetName="GeneLevel",append=T)
 
-dev.off()
