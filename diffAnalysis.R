@@ -47,6 +47,9 @@ tbl=topTags(lrt,n=Inf)$table
 
 FDR_CUT=0.05
 nSig=sum(tbl$FDR<FDR_CUT)
+if(nSig<1) {
+    cat("\n\n\n\tNO SIGNIFICANT PROBES at FDR<=",FDR_CUT,"\n\n")
+}
 topIds=rownames(tbl)[seq(nSig)]
 
 plotSmear(lrt,de.tags=topIds,pch=20,cex=0.6)
@@ -59,8 +62,8 @@ ans=topTags(lrt,n=nSig)$table
 dn=cpm(y)
 pseudo=min(dn[dn>0])
 
-avgCounts=t(apply(dn[rownames(ans),],1,function(x){2^tapply(log2(x+pseudo),group,mean)-pseudo}))
-avgAll=2^(apply(log2(dn[rownames(ans),]+pseudo),1,mean))-pseudo
+avgCounts=t(apply(dn[rownames(ans),,drop=F],1,function(x){2^tapply(log2(x+pseudo),group,mean)-pseudo}))
+avgAll=2^(apply(log2(dn[rownames(ans),,drop=F]+pseudo),1,mean))-pseudo
 logFC=ans$logFC
 FC=ifelse(logFC<0,2^(-logFC),2^logFC)
 libDat=dat[match(rownames(ans),dat$ProbeID),c(1,2,3)]
