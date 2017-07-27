@@ -3,6 +3,11 @@ require(readr)
 require(tidyr)
 require(tibble)
 require(magrittr)
+
+# Need this or will get an error on loading
+# See: https://github.com/dragua/xlsx/issues/83
+#
+options( java.parameters = c("-Xss2560k", "-Xmx8g") )
 require(xlsx)
 
 #############################################################################
