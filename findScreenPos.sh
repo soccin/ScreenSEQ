@@ -17,7 +17,7 @@ FASTQ=$3
 zcat $FASTQ \
     | $FASTXBIN/fastq_quality_filter -Q 33 -p 90 -q 30 \
     | $FASTXBIN/fastq_to_fasta -Q33 \
-    | head -10000 \
+    | head -100000 \
     | fgrep -v ">" \
     | $SDIR/getSubSeq.py $SGRNA_LEN \
     >test.fasta
@@ -40,7 +40,9 @@ echo
 
 cat testmap.sam \
     | fgrep NM:i:0 | fgrep ${SGRNA_LEN}M \
-    | cut -f1 | sed 's/.*_//' \
-    | sort | uniq -c | sort -nr \
-    | awk '{printf("%d\t%d\n",$2,$1)}' \
+    | cut -f1,2 | tr "\t" "," \
+    | sed 's/.*_//' \
+    | sort | uniq -c \
+    | sort -nr \
+    | awk '{printf("%s\t%d\n",$2,$1)}' \
     | tee posStats.txt | head
