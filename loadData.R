@@ -16,8 +16,23 @@ require(xlsx)
 #
 stop("NEED TO CUSTOM INPUT READER TO LIBRARY FORMAT")
 
-##projectNo="proj07665"
+##projectNo=getwd() %>% basename %>% tolower
 ##lib=read_csv("PrepLibrary/Human_GeCKOv2_LibA,B__Collapsed.csv")
+
+## Example B
+# libFiles=c(
+#     "Mouse_GeCKOv2_Library_A_09Mar2015.csv",
+#     "Mouse_GeCKOv2_Library_B_09Mar2015.csv")
+#
+# lib=lapply(libFiles,read_csv) %>% bind_rows %>% arrange(seq)
+# colnames(lib)=c("Gene","ProbeID","Seq")
+#
+# # Collapse duplicate sequences
+# lib=lib %>%
+#     select(-ProbeID) %>%
+#     group_by(Seq) %>%
+#     summarize(Gene=paste(Gene,collapse=";"))
+
 
 # dat variable must have 3 columns
 #   Seq
@@ -55,12 +70,12 @@ for(fname in countFiles) {
 }
 
 na2zero<-function(x){ifelse(is.na(x),0,x)}
-dat %<>% mutate_each(funs(na2zero),(ncol(dat)-length(countFiles)+1):ncol(dat))
+dat %<>% mutate_at(funs(na2zero),.vars=(ncol(dat)-length(countFiles)+1):ncol(dat))
 write.csv(as.data.frame(dat),cc(projectNo,"CountTable.csv"),row.names=F)
 
-libTotals=dat[,-(1:(ncol(dat)-length(countFiles)))] %>% summarize_each(funs(sum))
+libTotals=dat[,-(1:(ncol(dat)-length(countFiles)))] %>% summarize_all(funs(sum))
 
-totalCounts=rawCounts[,-1] %>% summarize_each(funs(sum(.,na.rm=T)))
+totalCounts=rawCounts[,-1] %>% summarize_all(funs(sum(.,na.rm=T)))
 
 bind_rows(libTotals,totalCounts) %>%
     mutate(Type=c("Lib","Total")) %>%
