@@ -1,91 +1,83 @@
-# ScreenSEQ
-Code for processing sh/sg-RNA or CRISPR screens. 
+# Version where exact structure of contruct is known
 
-Currently this code only works when there is no stagger. 
+`makeLibraryGenome.R`
 
-## Find position of seq
-
-If the position of the seq in the read is know then skip to next section. If not then follow these steps to try to figure out 
-
-1. Is the position of the seq is constant
-2. What it is
-3. What the strand is
-
-First convert the library to fasta format and pipe this to `mkPseudoGenome.py` to get a genome of library sequences. No code for this yet since libraries do not seem to have a standard format. An example:
+Need to have an amplicon.txt file which has the amplicon structure in it. Must have at least 3 lines where the 3 line is the TEMPLATE for the sgRNA sequence
 ```
-head Human_GeCKOv2_LibA,B__Collapsed.csv
-Seq,Gene
-AAAAAAAAAAAGTCGTACTT,hsa-mir-3129
-AAAAAAAAACTCCAAAACCC,hsa-mir-4329
-AAAAAAAAAGGTCAAGCATT,SPAG9
-AAAAAAAGTCTCGTTATGAA,RERE
-AAAAAAATCAGCCACGCGAC,MRGPRX4
+AATGGACTATCATATGCTTACCGTAACTTGAAAGTAT
+TTCGATTTCTTGGCTTTATATATCTTGTGGAAAGGACGAAACACC
+NNNNNNNNNNNNNNNNNNNN
+GTTTTAGAGCTAGAAATAGCAAGTTAAAA
+TAAGGCTAGTCCGTTATCAACTTGAAAAAG
 ```
 
-script 
+The library needs to be in a CSV file with the following columns
 
-```{bash}
-mkdir Construct
-cat Human_GeCKOv2_LibA,B__Collapsed.csv \
-	| fgrep -v Seq,Gene \
-	| awk -F',' '{print ">"$2"."++s"\n"$1}' \
-	| ./mkPseudoGenome.py Human_GeCKOv2_LibA,B \
-	>Construct/Human_GeCKOv2_LibA,B.fa
+| Gene.Symbol | sgRNA.sequence |
+|-------------|----------------|
+|  a2m  | GGTGTCAGAAGAACACGAAG |
+|  a2m  | GAGGCTGGGAGACTTTGTGA |
+
+Note, multiple sequences per Gene.Symbol are allowed. The script will fix this. However the sequences should be unique (distinct)
+
+Then run:
+
+```
+Rscript --no-save ./ScreenSEQ/makeLibraryGenome.R amplicon.txt LIBRARY_FILE.csv
 ```
 
-_N.B._ `mkPseudoGenome.py` will output the length of the screen library sequences. If they are not all the same this code will not work as is.
+And you will get
 
-Now get one FASTQ for the run and do:
-```{bash}
-./findScreenPos.sh \
-	Construct/human-druggable-top5.fa \
-	$LIB_SEQ_LEN \
-	/path/to/fastq/file.fastq.gz
+- LIBRARY_FILE__LibGenome.csv: Seq->Gene->ProbeId mapping
+- LIBRARY_FILE__LibGenome.txt: sequenceId,contigSequences in tab format
+
+Now make a genome direcotry and creat a genome FASTQ file and index it
+```
+mkdir genome
+cat Human_GeCKOv2_Library_AB_JOIN__LibGenome.txt \
+	| awk '{print ">"$1"\n"$2}' \ >genome/Human_GeCKOv2_Library_AB_JOIN__LibGenome.fa
+cd genome
+bwa index Human_GeCKOv2_Library_AB_JOIN__LibGenome.fa
+
+# SEMapper complains if there is no dict file or fai file
+samtools faidx Human_GeCKOv2_Library_AB_JOIN__LibGenome.fa
+
+picard.local CreateSequenceDictionary \
+R=Human_GeCKOv2_Library_AB_JOIN__LibGenome.fa \
+O=Human_GeCKOv2_Library_AB_JOIN__LibGenome.dict
+
+# Get the path to the genome in $GENOME
+GENOME=$(ls $PWD/*fa)
+cd ..
 ```
 
-If there is a well defined position this should find it. Use this in the next step
-
-## Count library sequences
-
-Once you know the `START_POS` and `SEQ_LEN` of the library you can count the number of screen sequences with `parseScreen.sh`:
-```{bash}
-$ ./parseScreen.sh 
-usage: parseScreen.sh START_POS SEQ_LEN FASTQ
-$ 
+Now make a SEMapper genome file for use by SEMapper:
+```
+echo GENOME_FASTA=$GENOME >Human_GeCKOv2_Library_AB_JOIN
+echo GENOME_BWA=$GENOME >>Human_GeCKOv2_Library_AB_JOIN
 ```
 
-Use the following to loop over all FASTQ files in a mapping file and submit to cluster.
-```{bash}
-cat Proj_*_sample_mapping.txt \
-	| cut -f4 \
-	| xargs -n 1 -I % find % -name '*_R1_*.fastq.gz' \
-	| xargs -n 1 bsub -o LSF/ -J PARSE -We 59 \
-		./parseScreen.sh $START_POS $SEQ_LEN 
+And then use SEMapper to map the sequences with the newly created genome file and the projects mapping file:
+
+```
+SEMapper/runPEMapperMultiDirectories.sh \
+	Human_GeCKOv2_Library_AB_JOIN \
+	Proj_00000_sample_mapping.txt
 ```
 
-Note this only processes the R1 reads and will only work correct if there is one FASTQ block per sample.
+## Count BAMs with `countBAM.sh`
 
-When finished the count files will be in the `LibCounts` directory.
+Use `countBAM.sh` to count the BAMs (__NOT__ the MD.bam's)
 
-## Join Count File for analysis
-
-Use the R script `loadData.R` to parse the count files, join them with the library sequences and make a library count table. Again due to the different formats for the library files you need to customize the reading of it before running the script. 
-
-When run you will get:
-
-* `$PROJNO__CountTable.csv`
-* `$PROJNO_COUNTS.rda`
-* `$PROJNO_STATS.xlsx`
-
-Check `$PROJNO_STATS.xlsx` for %-counted and if differential analysis is to be done add a `Group` column with group names.
-
-## Differential Analysis
-
-If the `Group` column has been added to the STATS.xlsx file then:
 ```
-Rscript --no-save diffAnalysis.R
+# Get rid of MD bams
+rm out___/*.bam
+ls out___/*bam | xargs -n 1 bsub -We 59 -o LSF/ -J COUNT ScreenSEQ/countBAM.sh 
 ```
-should run the analysis. Check the plots to make sure the normalization worked. 
 
+## Join count files
 
+```
+Rscript --no-save ScreenSEQ/joinCounts.R Human_GeCKOv2_Library_AB_JOIN__LibGenome.csv
+```
 
