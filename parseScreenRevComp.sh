@@ -22,6 +22,7 @@ zcat $FASTQ \
     | $FBIN/fastx_trimmer -Q 33 -f $START_POS -l $END_POS \
     | $FBIN/fastq_quality_converter -Q 33 -n \
     | $FBIN/fastq_quality_filter -Q 33 -p 1 -q 20 \
+    | $FBIN/fastx_reverse_complement \
     | $FBIN/fastx_collapser \
     | $FBIN/fasta_formatter -t \
     | tr '-' '\t' \
