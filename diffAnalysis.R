@@ -24,6 +24,12 @@ dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% data.frame -> ds
 rownames(ds)=dat$ProbeID
 group=factor(key$Group[match(colnames(ds),key$Sample)])
 
+if(nlevels(group)>2) {
+    cat("\n   More than two groups [",nlevels(group),"]\n")
+    cat("   Can not do auto analysis\n\n")
+    quit()
+}
+
 y <- DGEList(counts=ds,group=group)
 y <- calcNormFactors(y)
 
@@ -55,6 +61,7 @@ topIds=rownames(tbl)[seq(nSig)]
 plotSmear(lrt,de.tags=topIds,pch=20,cex=0.6)
 abline(h=c(-1,0,1),col=c("dodgerblue","yellow","dodgerblue"),lty=2)
 
+options( java.parameters = c("-Xss2560k", "-Xmx8g") )
 require(xlsx)
 OUTXLSX=cc(projectNo,"DiffAnalysis.xlsx")
 
