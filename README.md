@@ -71,7 +71,7 @@ Use `countBAM.sh` to count the BAMs (__NOT__ the MD.bam's)
 
 ```
 # Get rid of MD bams
-rm out___/*.bam
+rm out___/*MD.bam
 ls out___/*bam | xargs -n 1 bsub -We 59 -o LSF/ -J COUNT ScreenSEQ/countBAM.sh 
 ```
 
