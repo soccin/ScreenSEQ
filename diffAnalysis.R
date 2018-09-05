@@ -24,6 +24,13 @@ dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% data.frame -> ds
 rownames(ds)=dat$ProbeID
 group=factor(key$Group[match(colnames(ds),key$Sample)])
 
+setTag="X4"
+if(setTag!="") {
+    ds=ds[,grepl(setTag,colnames(ds))]
+    ds=ds[rowSums(ds)>10,]
+    group=droplevels(group[grepl(setTag,group)])
+}
+
 if(nlevels(group)>2) {
     cat("\n   More than two groups [",nlevels(group),"]\n")
     cat("   Can not do auto analysis\n\n")
@@ -40,7 +47,7 @@ gNames=sort(levels(y$samples$group),decreasing=T)
 contrast=paste(paste0(gNames,collapse="Vs"),"=",paste0(gNames,collapse="-"))
 cm=makeContrasts(contrast,levels=design)
 
-pdf(cc(projectNo,"DiffAnalysis.pdf"))
+pdf(cc(projectNo,cc("DiffAnalysis",setTag,".pdf")))
 
 boxplot(log2(cpm(y,normalize=T)+1))
 plotMDS(y)
@@ -63,7 +70,7 @@ abline(h=c(-1,0,1),col=c("dodgerblue","yellow","dodgerblue"),lty=2)
 
 options( java.parameters = c("-Xss2560k", "-Xmx8g") )
 require(xlsx)
-OUTXLSX=cc(projectNo,"DiffAnalysis.xlsx")
+OUTXLSX=cc(projectNo,cc("DiffAnalysis",setTag,".xlsx"))
 
 ans=topTags(lrt,n=nSig)$table
 dn=cpm(y)
