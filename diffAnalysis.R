@@ -85,7 +85,7 @@ pseudo=min(dn[dn>0])
 avgCounts=t(apply(dn[rownames(ans),,drop=F],1,function(x){2^tapply(log2(x+pseudo),group,mean)-pseudo}))
 avgAll=2^(apply(log2(dn[rownames(ans),,drop=F]+pseudo),1,mean))-pseudo
 logFC=ans$logFC
-FC=ifelse(logFC<0,2^(-logFC),2^logFC)
+FC=ifelse(logFC<0,-2^(-logFC),2^logFC)
 libDat=dat[match(rownames(ans),dat$ProbeID),c(1,2,3)]
 
 ans1=cbind(libDat,FC,ans[,c(1,4,5)],avgAll,avg=avgCounts)
