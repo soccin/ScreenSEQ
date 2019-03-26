@@ -24,6 +24,7 @@ echo $correctCigar
 samtools view $BAM \
     | egrep -w "$correctCigar" \
     | perl -ne  "print if m/NM:i:[01]\s/" \
+    | fgrep -w = \
     | cut -f1,3 \
     | sort -S 4g \
     | uniq \
