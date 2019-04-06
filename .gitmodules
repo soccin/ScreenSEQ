@@ -1,0 +1,3 @@
+[submodule "PEMapper_ScreenSEQ"]
+	path = PEMapper_ScreenSEQ
+	url = git@github.com:soccin/PEMapper.git
