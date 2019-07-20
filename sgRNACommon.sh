@@ -2,7 +2,9 @@
 
 BINDIR=/opt/common/CentOS_6/fastx_toolkit/fastx_toolkit-0.0.13
 FASTQ=$1
-BASE=$(basename $FASTQ | sed 's/.fastq.gz//')
+BASE=$(basename $FASTQ | sed 's/_R1_.*gz//')
+echo BASE=$BASE FASTQ=$FASTQ
+
 zcat $FASTQ \
     | $BINDIR/fastx_clipper -Q33 -a GTTTTAGAGCTAGAAATAGCAAGTT -M 10 -c \
     | $BINDIR/fastx_reverse_complement -Q 33 \
