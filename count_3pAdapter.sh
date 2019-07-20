@@ -26,5 +26,9 @@ zcat $FASTQ  ${FASTQ/_R1_/_R2_} \
     | awk '{print $2"\t"$1}' \
     >> ${BASE}___COUNTS.txt
 
-COUNTS=$(zcat $FASTQ | $BINDIR/fastq_to_fasta -Q 33 -n | egrep "^>" | wc -l | awk '{print 2*$1}')
-echo $BASE $COUNTS | tr ' ' '\t' ${BASE}____TOTAL.txt
+COUNTS=$(zcat $FASTQ \
+    | $SBIN/fastx_toolkit/fastx_toolkit-0.0.13/fastq_to_fasta -Q 33 -n \
+    | egrep "^>" \
+    | wc -l \
+    | awk '{print 2*$1}')
+echo $BASE $COUNTS | tr ' ' '\t' >${BASE}___TOTAL.txt
