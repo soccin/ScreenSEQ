@@ -8,7 +8,7 @@ ADAPTER_3p=$1
 ADAPTER_LEN=$2
 SGRNA_LEN=$3
 FASTQ=$4
-BASE=$(basename $FASTQ | sed 's/.fastq.gz//')
+BASE=$(basename $FASTQ | sed 's/_R1_.*gz//')
 
 echo "sgRNA Counts" | tr ' ' '\t' >${BASE}___COUNTS.txt
 
