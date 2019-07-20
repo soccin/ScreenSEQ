@@ -6,11 +6,12 @@ require(magrittr)
 require(readxl)
 require(edgeR)
 
-dataFile=dir(pattern="_COUNTS.rda")
-load(dataFile)
-projectNo=gsub("_COUNTS.rda","",dataFile)
+dataFile=dir(pattern="^Proj.*_COUNTS.xlsx")
+dat=read_xlsx(dataFile)
 
-keyFile=dir(pattern="^p.*_STATS.xlsx")
+projectNo=gsub("____COUNTS.xlsx","",dataFile)
+
+keyFile=dir(pattern="^Proj.*_STATS.xlsx")
 key=read_xlsx(keyFile,sheet=1)
 nSamps=nrow(key)
 
@@ -20,7 +21,7 @@ if(is.null(key$Group)) {
 }
 
 dat %<>% filter((dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% rowSums)>10)
-dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% data.frame -> ds
+dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% data.frame(.,check.names=F) -> ds
 rownames(ds)=dat$ProbeID
 group=factor(key$Group[match(colnames(ds),key$Sample)])
 
