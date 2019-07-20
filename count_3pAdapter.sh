@@ -13,7 +13,8 @@ BASE=$(basename $FASTQ | sed 's/.fastq.gz//')
 echo "sgRNA Counts" | tr ' ' '\t' >${BASE}___COUNTS.txt
 
 zcat $FASTQ  ${FASTQ/_R1_/_R2_} \
-    | $SBIN/cutadapt/cutadapt-1.9.1/bin/cutadapt -a $ADAPTER_3p - -O $ADAPTER_LEN --discard-untrimmed 2> LOG \
+    | $SBIN/cutadapt/cutadapt-1.9.1/bin/cutadapt \
+        -a $ADAPTER_3p - -O $ADAPTER_LEN --discard-untrimmed 2> ${BASE}___STATS.txt \
     | $SBIN/fastx_toolkit/fastx_toolkit-0.0.13/fastx_reverse_complement -Q 33 \
     | $SBIN/fastx_toolkit/fastx_toolkit-0.0.13/fastx_trimmer -l $SGRNA_LEN -Q 33 \
     | $SBIN/fastx_toolkit/fastx_toolkit-0.0.13/fastx_reverse_complement -Q 33 \
