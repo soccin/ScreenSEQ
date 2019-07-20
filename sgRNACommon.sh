@@ -5,6 +5,8 @@ FASTQ=$1
 BASE=$(basename $FASTQ | sed 's/_R1_.*gz//')
 echo BASE=$BASE FASTQ=$FASTQ
 
+echo "sgRNA Counts" | tr ' ' '\t' > ${BASE}___COUNTS.txt
+
 zcat $FASTQ \
     | $BINDIR/fastx_clipper -Q33 -a GTTTTAGAGCTAGAAATAGCAAGTT -M 10 -c \
     | $BINDIR/fastx_reverse_complement -Q 33 \
@@ -18,7 +20,7 @@ zcat $FASTQ \
     | awk '{print $3,$2}' \
     | tr ' ' '\t' \
     | sort -k2,2nr \
-    > ${BASE}_counts.txt
+    >> ${BASE}___COUNTS.txt
 
 COUNTS=$(zcat $FASTQ | $BINDIR/fastq_to_fasta -Q 33 -n | egrep "^>" | wc -l)
-echo $BASE $COUNTS | tr ' ' '\t' >${BASE}_total.txt
+echo $BASE $COUNTS | tr ' ' '\t' >${BASE}___TOTAL.txt
