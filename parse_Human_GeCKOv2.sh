@@ -15,4 +15,4 @@ else
 
 fi
 
-echo $SDIR/count_3pAdapter.sh GTTTTAGAGCTAGAAATAGCA 21 20 $ARG1
+$SDIR/count_3pAdapter.sh GTTTTAGAGCTAGAAATAGCA 21 20 $ARG1
