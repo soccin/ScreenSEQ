@@ -1,0 +1,1 @@
+cat Proj_09904_sample_mapping.txt  | cut -f4 | xargs -n 1 bsub -o LSF/ -J COUNT -We 119 ./ScreenSEQ/parse_Human_GeCKOv2.sh 
