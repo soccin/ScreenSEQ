@@ -30,5 +30,5 @@ COUNTS=$(zcat $FASTQ \
     | $SBIN/fastx_toolkit/fastx_toolkit-0.0.13/fastq_to_fasta -Q 33 -n \
     | egrep "^>" \
     | wc -l \
-    | awk '{print 2*$1}')
+    | awk '{print $1}')
 echo $BASE $COUNTS | tr ' ' '\t' >${BASE}___TOTAL.txt
