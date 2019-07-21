@@ -16,6 +16,7 @@ lib=read_csv(LIBFILE)
 counts=dir_ls(regexp="___COUNTS.txt") %>%
     map(read_tsv) %>%
     bind_rows(.id="Sample") %>%
+    mutate(Sample=gsub("___COUNTS.txt","",Sample)) %>%
     mutate(Sample=gsub("_IGO_.*","",Sample))
 
 tbl=counts %>% right_join(lib,by=c(sgRNA="Seq")) %>%
