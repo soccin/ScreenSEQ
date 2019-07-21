@@ -1,10 +1,15 @@
 args=commandArgs(trailing=T)
 if(len(args)==0) {
-    cat("\n  usage: joinCounts.R LIBRARY_FILE.CSV\n\n")
+    cat("\n  usage: joinCounts.R LIBRARY_FILE.CSV [COUNT_DIR|default==\".\"]\n\n")
     quit()
 }
 
 LIBFILE=args[1]
+if(len(args)>1) {
+    COUNT_DIR=args[2]
+} else {
+    COUNT_DIR="."
+}
 
 require(tidyverse)
 require(readxl)
@@ -13,7 +18,7 @@ require(openxlsx)
 
 lib=read_csv(LIBFILE)
 
-counts=dir_ls(regexp="___COUNTS.txt") %>%
+counts=dir_ls(COUNT_DIR,regexp="___COUNTS.txt") %>%
     map(read_tsv) %>%
     bind_rows(.id="Sample") %>%
     mutate(Sample=gsub("___COUNTS.txt","",Sample)) %>%
@@ -25,7 +30,7 @@ tbl=counts %>% right_join(lib,by=c(sgRNA="Seq")) %>%
 
 write.xlsx(tbl,cc(basename(getwd()),"___COUNTS.xlsx"))
 
-stats=dir_ls(regexp="___TOTAL.txt") %>%
+stats=dir_ls(COUNT_DIR,regexp="___TOTAL.txt") %>%
     map(read_tsv,col_names=c("Sample","Total")) %>%
     bind_rows %>%
     mutate(Sample=gsub("_IGO_.*","",Sample)) %>%
