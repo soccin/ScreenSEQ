@@ -21,6 +21,7 @@ lib=read_csv(LIBFILE)
 counts=dir_ls(COUNT_DIR,regexp="___COUNTS.txt") %>%
     map(read_tsv) %>%
     bind_rows(.id="Sample") %>%
+    mutate(Sample=basename(Sample)) %>%
     mutate(Sample=gsub("___COUNTS.txt","",Sample)) %>%
     mutate(Sample=gsub("_IGO_.*","",Sample))
 
@@ -33,6 +34,7 @@ write.xlsx(tbl,cc(basename(getwd()),"___COUNTS.xlsx"))
 stats=dir_ls(COUNT_DIR,regexp="___TOTAL.txt") %>%
     map(read_tsv,col_names=c("Sample","Total")) %>%
     bind_rows %>%
+    mutate(Sample=basename(Sample)) %>%
     mutate(Sample=gsub("_IGO_.*","",Sample)) %>%
     gather(Metric,Value,Total)
 
