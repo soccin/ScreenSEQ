@@ -1,8 +1,6 @@
-require(dplyr)
-require(readr)
-require(tidyr)
-require(tibble)
+require(tidyverse)
 require(magrittr)
+require(openxlsx)
 require(readxl)
 require(edgeR)
 
@@ -29,8 +27,16 @@ group=factor(key$Group[match(colnames(ds),key$Sample)])
 # setTag="" if only one comp
 # setTag=<regexp> to pick out specific comp
 #
-setTag="_NEED_TO_SET"
-stop("Set setTag")
+
+args=commandArgs(trailing=T)
+if(len(args)!=1) {
+    cat("\n   usage: diffAnalysis.R SetTAG\n\n")
+    quit()
+}
+
+setTag=gsub("\\+","|",args[1])
+cat("\n   SetTag =",setTag,"\n\n")
+
 if(setTag!="") {
     cat("Processing Set",setTag,"\n")
     ds=ds[,grepl(setTag,colnames(ds))]
@@ -65,6 +71,7 @@ lrt <- glmLRT(fit,contrast=cm[,1])
 
 tbl=topTags(lrt,n=Inf)$table
 
+wb=list()
 FDR_CUT=0.05
 nSig=sum(tbl$FDR<FDR_CUT)
 if(nSig<1) {
@@ -75,23 +82,21 @@ topIds=rownames(tbl)[seq(nSig)]
 plotSmear(lrt,de.tags=topIds,pch=20,cex=0.6)
 abline(h=c(-1,0,1),col=c("dodgerblue","yellow","dodgerblue"),lty=2)
 
-options( java.parameters = c("-Xss2560k", "-Xmx8g") )
-require(xlsx)
-OUTXLSX=cc(projectNo,cc("DiffAnalysis",make.names(setTag),".xlsx"))
+if(nSig>0) {
+    ans=topTags(lrt,n=nSig)$table
+    dn=cpm(y)
+    pseudo=min(dn[dn>0])
 
-ans=topTags(lrt,n=nSig)$table
-dn=cpm(y)
-pseudo=min(dn[dn>0])
+    avgCounts=t(apply(dn[rownames(ans),,drop=F],1,function(x){2^tapply(log2(x+pseudo),group,mean)-pseudo}))
+    avgAll=2^(apply(log2(dn[rownames(ans),,drop=F]+pseudo),1,mean))-pseudo
+    logFC=ans$logFC
+    FC=ifelse(logFC<0,-2^(-logFC),2^logFC)
+    libDat=dat[match(rownames(ans),dat$ProbeID),c(1,2,3)]
 
-avgCounts=t(apply(dn[rownames(ans),,drop=F],1,function(x){2^tapply(log2(x+pseudo),group,mean)-pseudo}))
-avgAll=2^(apply(log2(dn[rownames(ans),,drop=F]+pseudo),1,mean))-pseudo
-logFC=ans$logFC
-FC=ifelse(logFC<0,-2^(-logFC),2^logFC)
-libDat=dat[match(rownames(ans),dat$ProbeID),c(1,2,3)]
+    ans1=cbind(libDat,FC,ans[,c(1,4,5)],avgAll,avg=avgCounts)
 
-ans1=cbind(libDat,FC,ans[,c(1,4,5)],avgAll,avg=avgCounts)
-
-write.xlsx2(ans1,OUTXLSX,sheetName="ProbeLevel",row.names=F)
+    wb$ProbeLevel=ans1
+}
 
 probes=rownames(y$counts)
 genes=gsub(".\\d+$","",probes)
@@ -113,5 +118,6 @@ points(topGSA$logFC,topGSA$PValue,col="#FF8888",pch=19,cex=.8)
 
 dev.off()
 
-write.xlsx2(topGSA,OUTXLSX,sheetName="GeneLevel",append=T)
-
+wb$GeneLevel=topGSA %>% rownames_to_column("Gene")
+OUTXLSX=cc(projectNo,cc("DiffAnalysis",make.names(setTag),".xlsx"))
+write.xlsx(wb,OUTXLSX,overwrite=T)
