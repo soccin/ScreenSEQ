@@ -5,11 +5,19 @@ require(readxl)
 require(edgeR)
 
 dataFile=dir(pattern="^Proj.*_COUNTS.xlsx")
+if(len(dataFile)==0) {
+    cat("\n\n   Can not find COUNTS.xlsx file\n\n")
+    stop("FATAL ERROR")
+}
 dat=read_xlsx(dataFile)
 
 projectNo=gsub("____COUNTS.xlsx","",dataFile)
 
 keyFile=dir(pattern="^Proj.*_STATS.xlsx")
+if(len(keyFile)==0) {
+    cat("\n\n   Can not find STATS.xlsx file\n\n")
+    stop("FATAL ERROR")
+}
 key=read_xlsx(keyFile,sheet=1)
 nSamps=nrow(key)
 
@@ -22,10 +30,11 @@ dat %<>% filter((dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% rowSums)>10)
 dat %>% select( tail(seq(ncol(dat)),nSamps) ) %>% data.frame(.,check.names=F) -> ds
 rownames(ds)=dat$ProbeID
 group=factor(key$Group[match(colnames(ds),key$Sample)])
+group.o=group
 
 #
 # setTag="" if only one comp
-# setTag=<regexp> to pick out specific comp
+# setTag=<regexp> to pick out specific samples to compare
 #
 
 args=commandArgs(trailing=T)
