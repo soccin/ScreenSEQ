@@ -1,3 +1,11 @@
+#
+# Library .csv file must have these columns
+# Seq,Gene,ProbeID,LibName
+# CATCTTCTTTCACCTGAACG,A1BG,A1BG;1,Brunello
+#
+# ProbeID must be semi-colon delimited
+#
+
 args=commandArgs(trailing=T)
 if(len(args)==0) {
     cat("\n  usage: joinCounts.R LIBRARY_FILE.CSV [COUNT_DIR|default==\".\"]\n\n")
