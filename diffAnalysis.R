@@ -33,7 +33,7 @@ group=factor(key$Group[match(colnames(ds),key$Sample)])
 group.o=group
 
 #
-# setTag="" if only one comp
+# setTag="NA" if only one comp
 # setTag=<regexp> to pick out specific samples to compare
 #
 
@@ -45,6 +45,10 @@ if(len(args)!=1) {
 
 setTag=gsub("\\+","|",args[1])
 cat("\n   SetTag =",setTag,"\n\n")
+
+if(setTag=="NA" || setTag=="na" || setTag=="ALL" || setTag=="All" || setTag=="all") {
+    setTag=""
+}
 
 if(setTag!="") {
     cat("Processing Set",setTag,"\n")

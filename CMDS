@@ -1,1 +1,6 @@
 cat Proj_09904_sample_mapping.txt  | cut -f4 | xargs -n 1 bsub -o LSF/ -J COUNT -We 119 ./ScreenSEQ/parse_Human_GeCKOv2.sh 
+
+cat Proj_*_sample_mapping.txt | cut -f4 | xargs -I % find % | fgrep _R1_ | xargs -n 1 bsub -o LSF/ -J COUNT_$$ -W 59 -n 15 -R "rusage[mem=2]" ./parseScreenPE_10958.sh
+
+Rscript --no-save joinCounts.R sgRNA_library_project_10958_B.csv Counts
+
