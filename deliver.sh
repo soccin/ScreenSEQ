@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
+
 if [ $# != "1" ]; then
     echo "usage: deliver.sh /ifs/res/seq/pi/invest"
     exit
@@ -13,17 +15,16 @@ RDIR=$DIR/$PROJNO/r_001/screen
 
 mkdir -vp $RDIR
 
-cp -v proj_*xlsx $RDIR
-cp -v proj_*pdf $RDIR
-cp -v proj_*.csv $RDIR
+cp -v [Pp]roj_*xlsx $RDIR
+cp -v [Pp]roj_*pdf $RDIR
+cp -v [Pp]roj_*.csv $RDIR
 
 echo $RDIR
 
 P1=$(echo $RDIR | sed 's/.*seq.//')
 CAR=$(echo $P1 | perl -pe 's|/.*||')
 CDR=$(echo $P1 | perl -pe 's|.*?/||')
-NUM_SAMPLES=$(cat *_COUNTS.csv  | head -1 | tr ',' '\n' | wc -l)
-NUM_SAMPLES=$(( NUM_SAMPLES - 3 ))
+NUM_SAMPLES=$(Rscript --no-save $SDIR/countSamples.R)
 
 echo "Subject: Results for sgRNA screen $PROJNO ready"
 echo
