@@ -23,7 +23,7 @@ mkdir -p $ODIR
 
 echo "sgRNA Counts" | tr ' ' '\t' >$ODIR/$OFILE
 
-zcat $FASTQ ${FASTQ/_R1_/_R2_} | head -400000 \
+zcat $FASTQ ${FASTQ/_R1_/_R2_} \
     | $FBIN/fastx_reverse_complement -Q 33 \
     | $SDIR/fastq-grep $CLIPSEQ \
     | $FBIN/fastx_clipper -M 20 -c -a $CLIPSEQ -Q 33 \
@@ -38,11 +38,11 @@ zcat $FASTQ ${FASTQ/_R1_/_R2_} | head -400000 \
     | awk '{print $2,$1}' | tr ' ' '\t' \
     >> $ODIR/$OFILE
 
-# TOTAL=$(zcat $FASTQ \
-#     | $FBIN/fastq_to_fasta -Q 33 -n \
-#     | $FBIN/fasta_formatter -t \
-#     | wc -l
-#     )
+TOTAL=$(zcat $FASTQ \
+    | $FBIN/fastq_to_fasta -Q 33 -n \
+    | $FBIN/fasta_formatter -t \
+    | wc -l
+    )
 
-# echo $SAMPLE_ID $TOTAL | tr ' ' '\t' >$ODIR/${OFILE/___COUNTS.txt/___TOTAL.txt}
+echo $SAMPLE_ID $TOTAL | tr ' ' '\t' >$ODIR/${OFILE/___COUNTS.txt/___TOTAL.txt}
 
