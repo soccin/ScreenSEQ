@@ -11,7 +11,7 @@ samples=$(cat *_sample_mapping.txt | cut -f2 | sort | uniq)
 for si in $samples; do
     cat *_sample_mapping.txt | fgrep $si | cut -f4 \
         | xargs -I % find % | fgrep _R1_ \
-        | xargs echo bsub -o LSF/ -J COUNT_$$ -W 59 -n 15 -R "rusage[mem=2]" $PARSE_SCRIPT
+        | xargs bsub -o LSF/ -J COUNT_$$ -W 59 -n 15 -R "rusage[mem=2]" $PARSE_SCRIPT
 done
 
 bSync COUNT_$$
