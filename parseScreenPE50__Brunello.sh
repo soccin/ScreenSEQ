@@ -3,17 +3,18 @@ SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 FBIN=/opt/common/CentOS_6/fastx_toolkit/fastx_toolkit-0.0.13
 
-if [ "$#" != "1" ]; then
-    echo usage: parseScreen.sh FASTQ
+if [ "$#" -lt 1 ]; then
+    echo usage: parseScreen.sh FASTQ [FASTQ2 ...]
     exit
 fi
 
 CLIPSEQ="CGGTGTTTCGTCCTTTCCACAAG"
 SEQ_LEN=20
 START_POS=1
-FASTQ=$1
 
-SAMPLE_ID=$(basename $FASTQ | sed 's/_IGO_.*//' | tr '-' '_')
+FASTQS=$*
+
+SAMPLE_ID=$(basename $1 | sed 's/_IGO_.*//' | tr '-' '_')
 
 OFILE=${SAMPLE_ID}___COUNTS.txt
 echo $OFILE, $SAMPLE_ID, $START_POS
@@ -23,7 +24,7 @@ mkdir -p $ODIR
 
 echo "sgRNA Counts" | tr ' ' '\t' >$ODIR/$OFILE
 
-zcat $FASTQ ${FASTQ/_R1_/_R2_} \
+zcat $FASTQS ${FASTQS//_R1_/_R2_} \
     | $FBIN/fastx_reverse_complement -Q 33 \
     | $SDIR/fastq-grep $CLIPSEQ \
     | $FBIN/fastx_clipper -M 20 -c -a $CLIPSEQ -Q 33 \
@@ -38,7 +39,7 @@ zcat $FASTQ ${FASTQ/_R1_/_R2_} \
     | awk '{print $2,$1}' | tr ' ' '\t' \
     >> $ODIR/$OFILE
 
-TOTAL=$(zcat $FASTQ \
+TOTAL=$(zcat $FASTQS \
     | $FBIN/fastq_to_fasta -Q 33 -n \
     | $FBIN/fasta_formatter -t \
     | wc -l

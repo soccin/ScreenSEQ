@@ -6,9 +6,15 @@
 PARSE_SCRIPT=ScreenSEQ/parseScreenPE50__Brunello.sh
 LIBRARYFILE=ScreenSEQ/libs/Brunello_NoDatesLibFile.csv.gz
 
-cat *_sample_mapping.txt | cut -f4 \
-    | xargs -I % find % | fgrep _R1_ \
-    | xargs -n 1 bsub -o LSF/ -J COUNT_$$ -W 59 -n 15 -R "rusage[mem=2]" $PARSE_SCRIPT
+samples=$(cat *_sample_mapping.txt | cut -f2 | sort | uniq)
+
+for si in $samples; do
+    cat *_sample_mapping.txt | fgrep $si | cut -f4 \
+        | xargs -I % find % | fgrep _R1_ \
+        | xargs echo bsub -o LSF/ -J COUNT_$$ -W 59 -n 15 -R "rusage[mem=2]" $PARSE_SCRIPT
+done
+
+exit
 
 bSync COUNT_$$
 
