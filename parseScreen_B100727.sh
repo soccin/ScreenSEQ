@@ -33,7 +33,6 @@ LENCLIPSEQ=$((LENCLIPSEQ - 1))
 echo $CLIPSEQRC, $LENCLIPSEQ
 
 zcat $FASTQS \
-    | head -40000 \
     | $FBIN/fastx_reverse_complement -Q 33 \
     | $SDIR/fastq-grep $CLIPSEQRC \
     | $FBIN/fastx_clipper -M $LENCLIPSEQ -c -a $CLIPSEQRC -Q 33 \
@@ -49,7 +48,6 @@ zcat $FASTQS \
     >> $ODIR/$OFILE
 
 TOTAL=$(zcat $FASTQS \
-    | head -40000 \
     | $FBIN/fastq_to_fasta -Q 33 -n \
     | $FBIN/fasta_formatter -t \
     | wc -l
