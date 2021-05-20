@@ -8,6 +8,7 @@ if [ $# != "1" ]; then
 fi
 
 DIR=$1
+DIR=$(echo $DIR | perl -pe 's|/$||')
 
 PROJNO=$(basename $PWD)
 
@@ -21,7 +22,7 @@ cp -v [Pp]roj_*.csv $RDIR
 
 echo $RDIR
 
-P1=$(echo $RDIR | sed 's/.*seq.//')
+P1=$(echo $RDIR | sed 's/.*delivery.//')
 CAR=$(echo $P1 | perl -pe 's|/.*||')
 CDR=$(echo $P1 | perl -pe 's|.*?/||')
 NUM_SAMPLES=$(Rscript --no-save $SDIR/countSamples.R)
@@ -30,12 +31,12 @@ echo "Subject: Results for sgRNA screen $PROJNO ready"
 echo
 echo "The results are in:"
 echo
-echo "  MAC - smb://bic.mskcc.org/$CAR"
-echo "  PC - \\\\bic.mskcc.org\\$CAR"
+echo "  MAC - smb://beta.mskcc.org/$CAR"
+echo "  PC - \\\\beta.mskcc.org\\$CAR"
 echo
 echo "In folder"
 echo
-echo "   "/$CAR/RESULTS/$CDR
+echo "   "/$CAR/DELIVERY/$CDR
 echo
 echo Nicholas Socci
 echo Bioinformatics Core
