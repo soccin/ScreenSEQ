@@ -34,8 +34,9 @@ counts=dir_ls(COUNT_DIR,regexp="___COUNTS.txt") %>%
     mutate(Sample=gsub("_IGO_.*","",Sample))
 
 tbl=counts %>% right_join(lib,by=c(sgRNA="Seq")) %>%
-    spread(Sample,Counts,fill=0) %>%
-    select(-`<NA>`)
+    spread(Sample,Counts,fill=0)
+
+tbl=tbl[,colnames(tbl)!="<NA>"]
 
 write.xlsx(tbl,cc(basename(getwd()),"___COUNTS.xlsx"))
 
