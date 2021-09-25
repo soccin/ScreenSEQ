@@ -4,6 +4,8 @@ import gzip
 def read4Lines(fp):
     res=[]
     for line in fp:
+        if type(line)==bytes:
+            line=line.decode('ascii')
         res.append(line.strip())
         if len(res)==4:
             yield res
@@ -20,7 +22,7 @@ class FASTQ:
 
 def read_FASTQ(fqFile):
     if fqFile.endswith(".gz"):
-        fp=gzip.open(fqFile,"r")
+        fp=gzip.open(fqFile,"rb")
     else:
         fp=open(fqFile,"r")
 
