@@ -1,5 +1,4 @@
-# Library specific scripts
+# ScreenSEQ
 
-This version uses library specific scripts. 
+Python3 version
 
-- 
