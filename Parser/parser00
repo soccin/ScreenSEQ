@@ -3,6 +3,12 @@
 import sys
 from tools.FASTQ import read_FASTQ
 
-for rr in read_FASTQ(sys.argv[1]):
-    print(rr.seq)
+import argparse
+
+argParser=argparse.ArgumentParser()
+argParser.add_argument('fastq',type=str)
+args=argParser.parse_args()
+
+for rr in read_FASTQ(args.fastq):
+    print(rr.desc,rr.seq[:25],rr.qual[:25])
 
