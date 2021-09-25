@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+
+import sys
+from tools.FASTQ import read_FASTQ
+
+for rr in read_FASTQ(sys.argv[1]):
+    print(rr.seq)
+
