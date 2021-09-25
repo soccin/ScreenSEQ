@@ -1,56 +1,69 @@
+#
+# Library .csv file must have these columns
+# Seq,Gene,ProbeID,LibName
+# CATCTTCTTTCACCTGAACG,A1BG,A1BG;1,Brunello
+#
+# ProbeID must be semi-colon delimited
+#
+
 args=commandArgs(trailing=T)
-
-if(len(args)!=1) {
-    cat("\n    usage: joinCounts.R LIBRARY_FILE.csv\n\n")
+if(len(args)==0) {
+    cat("\n  usage: joinCounts.R LIBRARY_FILE.CSV [COUNT_DIR|default==\".\"]\n\n")
     quit()
 }
 
-library(tidyverse)
-library(magrittr)
-options( java.parameters = c("-Xss2560k", "-Xmx8g") )
-library(xlsx)
-
-libraryFile=args[1]
-lib=read_csv(libraryFile)
-
-if(!all(c("Seq","Gene","ProbeID") %in% colnames(lib))) {
-    cat("\n    ERROR: library file must have Seq,Gene,ProbeID columns\n")
-    cat("    cols:= [",paste0(colnames(lib),collapse=","),"]\n\n")
-    quit()
+LIBFILE=args[1]
+if(len(args)>1) {
+    COUNT_DIR=args[2]
+} else {
+    COUNT_DIR="."
 }
 
-cfiles=dir("Counts",full.names=T)
-dd=lapply(cfiles,read_tsv,col_names=F)
+require(tidyverse)
+require(readxl)
+require(fs)
+require(openxlsx)
 
-names(dd)=gsub(".*__","",cfiles)
-dx=bind_rows(dd,.id="Sample")
-dat=dx %>% spread(Sample,X2) %>% rename(ProbeID=X1)
+lib=read_csv(LIBFILE)
 
-na2zero<-function(x){ifelse(is.na(x),0,x)}
+counts=dir_ls(COUNT_DIR,regexp="___COUNTS.txt") %>%
+    map(read_tsv) %>%
+    bind_rows(.id="Sample") %>%
+    mutate(Sample=basename(Sample)) %>%
+    mutate(Sample=gsub("___COUNTS.txt","",Sample)) %>%
+    mutate(Sample=gsub("_IGO_.*","",Sample))
 
-dat %<>% mutate_at(funs(na2zero),.vars=(ncol(dat)-length(cfiles)+1):ncol(dat))
+tbl=counts %>% right_join(lib,by=c(sgRNA="Seq")) %>%
+    spread(Sample,Counts,fill=0)
 
-dat=left_join(dat,lib) %>% select(Seq,Gene,ProbeID,2:(ncol(dat)))
+tbl=tbl[,colnames(tbl)!="<NA>"]
 
-base=tolower(basename(getwd()))
-dat %>% write_csv(paste0(base,"_COUNTS.csv"))
-save(dat,file=paste0(base,"_COUNTS.rda"),compress=T)
+write.xlsx(tbl,cc(basename(getwd()),"___COUNTS.xlsx"))
 
-libCounts=dx %>% group_by(Sample) %>% summarize(Lib=sum(X2))
+stats=dir_ls(COUNT_DIR,regexp="___TOTAL.txt") %>%
+    map(read_tsv,col_names=c("Sample","Total")) %>%
+    bind_rows %>%
+    mutate(Sample=basename(Sample)) %>%
+    mutate(Sample=gsub("_IGO_.*","",Sample)) %>%
+    gather(Metric,Value,Total)
 
-ff=dir("out___",pattern="AS.txt",full.names=T)
-stats=lapply(ff,read_tsv,comment="#")
-names(stats)=basename(ff) %>% gsub("s_","",.) %>% gsub("___.*","",.)
+numProc=counts %>%
+    group_by(Sample) %>%
+    summarize(Num.Processed=sum(Counts)) %>%
+    gather(Metric,Value,Num.Processed)
 
-totalCounts=bind_rows(stats,.id="Sample") %>%
-    filter(CATEGORY=="UNPAIRED") %>%
-    select(Sample,TOTAL_READS) %>%
-    rename(Total=TOTAL_READS) %>%
-    mutate(Total=as.numeric(Total))
+numLib=counts %>%
+    right_join(lib,by=c(sgRNA="Seq")) %>%
+    group_by(Sample) %>%
+    summarize(Num.Library=sum(Counts)) %>%
+    gather(Metric,Value,Num.Library) %>%
+    filter(!is.na(Sample))
 
-stats=full_join(totalCounts,libCounts) %>%
-    mutate(PCT=Lib/Total) %>%
-    mutate(Group=gsub(".$","",Sample))
+statsTbl=bind_rows(stats,numProc) %>%
+    bind_rows(numLib) %>%
+    spread(Metric,Value) %>%
+    select(Sample,Total,Num.Processed,Num.Library) %>%
+    mutate(PCT.Useable=Num.Library/Total)
 
-write.xlsx(as.data.frame(stats),paste0(base,"_STATS.xlsx"),row.names=F)
+write.xlsx(statsTbl,cc(basename(getwd()),"___STATS.xlsx"))
 
