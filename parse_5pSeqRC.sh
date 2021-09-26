@@ -16,20 +16,42 @@ FBIN=/opt/common/CentOS_6/fastx_toolkit/fastx_toolkit-0.0.13
 # CTGGATTTATAAACTTGTGC
 #
 #
-# It also takes multiple FASTQ files
+# It also takes multiple FASTQ files OR a folder with FASTQ's in it
+# Only the R1 read is used.
 
 # Arg1 == ADAPTER
 # Arg2...n == FASTQ's
 
 # This one is only for samples with just _R1_ reads
 
+if [ "$#" -lt 2 ]; then
+    echo
+    echo "  usage: parse_5pSeqRC.sh ADAPTER_SEQ (FASTQ_R1|FASTQ_DIR) [FASTQ_R1 FASTQ_R1 ...]"
+    echo
+    exit
+fi
+
 ADAPTER=$1
 LEN=$(($(echo $ADAPTER | wc -c) - 1))
 shift 1
-FASTQ=$*
-BASE=$(basename $1 | sed 's/_R1.*gz//')
+
+FASTQARG1=$(realpath $1)
+
+if [ -d "$FASTQARG1" ]; then
+    FASTQ=$(ls $FASTQARG1/*_R1_*.fastq.gz)
+    F1=$(ls $FASTQARG1/*_R1_*.fastq.gz | head -1)
+    BASE=$(basename $F1 | sed 's/_R1.*gz//')
+else
+    FASTQ=$*
+    BASE=$(basename $1 | sed 's/_R1.*gz//')
+fi
 
 echo "sgRNA Counts" | tr ' ' '\t' > ${BASE}___COUNTS.txt
+
+echo
+echo "FASTQs"
+echo $FASTQ | tr ' ' '\n'
+echo
 
 zcat $FASTQ \
     | $FBIN/fastx_clipper -Q 33 -a $ADAPTER -M $(( LEN - 2 )) -c \
