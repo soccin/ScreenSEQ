@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import re
+
+from collections import Counter
+from tools.FASTQ import read_FASTQ
+
+import argparse
+
+argParser=argparse.ArgumentParser()
+argParser.add_argument('adapter',type=str, help="Adapter sequence")
+argParser.add_argument('base',type=str,help="Homopolymer base")
+argParser.add_argument('fastqs',type=str,nargs="+",help="One or more fastq files")
+args=argParser.parse_args()
+
+totalSequences=0
+withAdapter=0
+sequenceCounts=Counter()
+
+f1=os.path.basename(args.fastqs[0])
+sampleId=re.findall(r"(.*)_IGO_",f1)
+if len(sampleId)<1:
+    sampleId=re.findall(r"(.*).fastq",f1)
+sampleId=sampleId[0]
+
+print("SampleId =",sampleId)
+
+for fastq in args.fastqs:
+    for rr in read_FASTQ(fastq):
+        totalSequences+=1
+        pos=rr.seq.find(args.adapter)
+        if pos>-1:
+            withAdapter+=1
+            print(pos,rr.seq[(pos-10):(pos+10)])
+            sys.exit()
+
+
+fp=open(sampleId+"___TOTAL.txt","w")
+print("\t".join([sampleId,str(totalSequences)]),file=fp)
+fp.close()
+
+fp=open(sampleId+"___STATS.txt","w")
+print("Sample\tTotal\tWithAdapt",file=fp)
+print("\t".join([sampleId,str(totalSequences),str(withAdapter)]),file=fp)
+fp.close()
+
+fp=open(sampleId+"___COUNTS.txt","w")
+print("sgRNA\tCounts",file=fp)
+for seq in sequenceCounts:
+    print("\t".join(map(str,[seq,sequenceCounts[seq]])),file=fp)
+fp.close()
