@@ -28,7 +28,10 @@ sampleId=sampleId[0]
 print("SampleId =",sampleId)
 
 for fastq in args.fastqs:
-    for rr in read_FASTQ(fastq):
+    print("Processing",fastq)
+    for ii,rr in enumerate(read_FASTQ(fastq)):
+        if ii % 1000000 == 0: 
+             print(ii/1e6,"Mreads")        
         totalSequences+=1
         pos5=rr.seq.find(args.adapter5p)
         pos3=rr.seq.find(args.adapter3p)
@@ -38,7 +41,7 @@ for fastq in args.fastqs:
             s1=rr.seq[pos5:(pos5+len(args.adapter5p))]
             sh=rr.seq[(pos5+len(args.adapter5p)):(pos3)]
             s2=rr.seq[pos3:(pos3+len(args.adapter3p))]
-            print(s1,sh,s2)
+            #print(s1,sh,s2)
             sequenceCounts.update([sh])
 
 
