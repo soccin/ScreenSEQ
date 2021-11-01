@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import re
+
+from collections import Counter
+from tools.FASTQ import read_FASTQ
+
+import argparse
+
+argParser=argparse.ArgumentParser()
+argParser.add_argument('adapter5p',type=str, help="Adapter 5p sequence")
+argParser.add_argument('adapter3p',type=str, help="Adapter 3p sequence")
+argParser.add_argument('fastqs',type=str,nargs="+",help="One or more fastq files")
+args=argParser.parse_args()
+
+totalSequences=0
+withAdapter=0
+sequenceCounts=Counter()
+
+f1=os.path.basename(args.fastqs[0])
+sampleId=re.findall(r"(.*)_IGO_",f1)
+if len(sampleId)<1:
+    sampleId=re.findall(r"(.*).(fastq|fq)",f1)[0]
+sampleId=sampleId[0]
+
+print("SampleId =",sampleId)
+
+for fastq in args.fastqs:
+    print("Processing",fastq)
+    for ii,rr in enumerate(read_FASTQ(fastq)):
+        if ii % 1000000 == 0: 
+             print(ii/1e6,"Mreads")        
+        totalSequences+=1
+        pos5=rr.seq.find(args.adapter5p)
+        pos3=rr.seq.find(args.adapter3p)
+
+        if pos5>-1 and pos3>-1:
+            withAdapter+=1
+            s1=rr.seq[pos5:(pos5+len(args.adapter5p))]
+            sh=rr.seq[(pos5+len(args.adapter5p)):(pos3)]
+            s2=rr.seq[pos3:(pos3+len(args.adapter3p))]
+            #print(s1,sh,s2)
+            sequenceCounts.update([sh])
+
+
+fp=open(sampleId+"___TOTAL.txt","w")
+print("\t".join([sampleId,str(totalSequences)]),file=fp)
+fp.close()
+
+fp=open(sampleId+"___STATS.txt","w")
+print("Sample\tTotal\tWithAdapt",file=fp)
+print("\t".join([sampleId,str(totalSequences),str(withAdapter)]),file=fp)
+fp.close()
+
+fp=open(sampleId+"___COUNTS.txt","w")
+print("sgRNA\tCounts",file=fp)
+for seq in sequenceCounts:
+    print("\t".join(map(str,[seq,sequenceCounts[seq]])),file=fp)
+fp.close()
