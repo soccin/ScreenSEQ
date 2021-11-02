@@ -1,0 +1,6 @@
+time mageck count -l InesFM_Inflammation___Lib.txt -n p12513 --sample-label $(cat LABELS) --control-sgrna InesFM_Inflammation___LibControls.txt --fastq $(cat FASTQ ) --fastq-2 $(cat FASTQ2) --pdf-report
+
+
+mageck test -k p12513.count.txt -t WT_Cas9_SCF_TPO_d7 -c WT_Cas9_SCF_d1 -n cmp__WT_Cas9_SCF__TPO_d7_vs_d1 --control-sgrna InesFM_Inflammation___LibControls.txt --pdf-report
+mageck test -k p12513.count.txt -t WT_Cas9_SCF_d7 -c WT_Cas9_SCF_d1 -n cmp__WT_Cas9_SCF__d7_vs_d1 --control-sgrna InesFM_Inflammation___LibControls.txt --pdf-report
+mageck test -k p12513.count.txt -t WT_SCF_d7 -c WT_SCF_d1 -n cmp__WT_SCF__d7_vs_d1 --control-sgrna InesFM_Inflammation___LibControls.txt -pdf-report
