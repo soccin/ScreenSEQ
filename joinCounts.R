@@ -26,7 +26,16 @@ require(openxlsx)
 
 lib=read_csv(LIBFILE)
 
-counts=dir_ls(COUNT_DIR,regexp="___COUNTS.txt") %>%
+countFiles=dir_ls(COUNT_DIR,regexp="___COUNTS.txt")
+
+if(len(countFiles)==0) {
+    cat("\n\n  No count files found in [",COUNT_DIR,"]\n")
+    cat("  Please specify COUNT_DIR\n")
+    cat("\n  usage: joinCounts.R LIBRARY_FILE.CSV [COUNT_DIR|default==\".\"]\n\n")
+    quit()
+}
+
+counts=countFiles %>%
     map(read_tsv) %>%
     bind_rows(.id="Sample") %>%
     mutate(Sample=basename(Sample)) %>%
