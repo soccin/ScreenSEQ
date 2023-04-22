@@ -35,8 +35,9 @@ if(len(countFiles)==0) {
 }
 
 counts=countFiles %>%
-    map(read_tsv) %>%
+    map(read_tsv,col_types = cols(.default = "c")) %>%
     bind_rows(.id="Sample") %>%
+    type_convert() %>%
     mutate(Sample=basename(Sample)) %>%
     mutate(Sample=gsub("___COUNTS.txt","",Sample)) %>%
     mutate(Sample=gsub("_IGO_.*","",Sample))
