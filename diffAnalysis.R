@@ -39,7 +39,8 @@ group.o=group
 
 args=commandArgs(trailing=T)
 if(len(args)!=1) {
-    cat("\n   usage: diffAnalysis.R SetTAG\n\n")
+    cat("\n   usage: diffAnalysis.R SetTAG\n")
+    cat("                SetTAG==B|A or B-A (FC=B/A)\n\n")
     quit()
 }
 
@@ -51,10 +52,11 @@ if(setTag=="NA" || setTag=="na" || setTag=="ALL" || setTag=="All" || setTag=="al
 }
 
 if(setTag!="") {
-    cat("Processing Set",setTag,"\n")
-    ds=ds[,grepl(setTag,colnames(ds))]
+    sGroups=strsplit(setTag,"[-|]")[[1]]
+    cat("Processing Set",setTag,":>",sGroups,"\n")
+    ds=ds[,key %>% filter(Group %in% sGroups) %>% pull(Sample)]
     ds=ds[rowSums(ds)>10,]
-    group=droplevels(group[grepl(setTag,group)])
+    group=droplevels(group[group %in% sGroups])
 }
 
 if(nlevels(group)>2) {
@@ -69,7 +71,7 @@ y <- calcNormFactors(y)
 design <- model.matrix(~0+group, data=y$samples)
 colnames(design) <- levels(y$samples$group)
 
-gNames=sort(levels(y$samples$group),decreasing=T)
+gNames=sGroups
 contrast=paste(paste0(gNames,collapse="Vs"),"=",paste0(gNames,collapse="-"))
 cm=makeContrasts(contrast,levels=design)
 
