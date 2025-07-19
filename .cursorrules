@@ -1,0 +1,32 @@
+# Cursor AI Rules (generic)
+
+## Commit Message Generation
+
+Take a deep breath and work on this problem step-by-step. Summarize the diff of this commit into a clear and concisely written commit message. Use the imperative style for the subject, use Conventional Commits (type and optionally scope), and limit the subject+type+scope to 50 characters or less. Be as descriptive as possible in the unlimited length body. Return as a single codeblock, ready to be pasted into COMMIT_EDITMSG without further editing. Please wrap the text in the main body to roughly 60 character long lines.
+
+Finally, please append the tag `#cursor` to last line of the main body. 
+
+### Specific rules
+
+When generating commit messages for this project:
+- Use conventional commit format: `type: description` or `type:(scope)description`
+- Common types: feat, fix, docs, style, refactor, test, chore
+- Description should be concise but descriptive
+- Include reference to specific files or modules when relevant
+
+## Examples of good commit messages:
+
+```
+fix: resolve memory allocation issue in QC module
+```
+
+```
+refactor: unify WES and WGS run scripts
+
+Create a single set of scripts that can run multiple job
+types using command line options to select type. #cursor
+```
+
+```
+chore(conf): update LSF resource parameters for better performace
+```
