@@ -20,7 +20,10 @@ for rr in read_FASTQ(args.fastq):
     for si in seqs:
         pos=rr.seq.find(si)
         if pos>-1:
-            print("#SCAN#",si, rr.seq.find(si), rr.seq[(pos-20):pos],rr.seq[(pos+len(si)):(pos+len(si)+20)],rr.seq[(pos+len(si)):-1])
+            print("#SCAN#",si, pos,
+                "5':", rr.seq[(pos-20):pos],
+                "3':", rr.seq[(pos+len(si)):(pos+len(si)+20)]
+                )
             sys.stdout.flush()
 
 
