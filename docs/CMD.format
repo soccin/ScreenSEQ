@@ -1,0 +1,1 @@
+pandoc RESULTS.md --variable geometry:margin=0.75in --variable fontsize=11pt -o RESULTS.pdf 
