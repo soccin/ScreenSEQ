@@ -38,7 +38,14 @@ tbl=counts %>% right_join(lib,by=c(sgRNA="Seq")) %>%
 
 tbl=tbl[,colnames(tbl)!="<NA>"]
 
-write.xlsx(tbl,cc(basename(getwd()),"___COUNTS.xlsx"))
+projTag=grep("Proj_",strsplit(getwd(),"/")[[1]],value=T)
+if(len(projTag)==0) {
+    projTag="Proj_xyz"
+} else {
+    projTag=projTag[1]
+}
+
+write.xlsx(tbl,cc(projTag,"___COUNTS.xlsx"))
 
 stats=dir_ls(COUNT_DIR,regexp="___TOTAL.txt") %>%
     map(read_tsv,col_names=c("Sample","Total")) %>%
@@ -71,5 +78,5 @@ statsTbl=bind_rows(stats,numProc) %>%
     select(Sample,Total,Num.Processed,Num.Library) %>%
     mutate(PCT.Useable=Num.Library/Total)
 
-write.xlsx(statsTbl,cc(basename(getwd()),"___STATS.xlsx"))
+write.xlsx(statsTbl,cc(projTag,"___STATS.xlsx"))
 
