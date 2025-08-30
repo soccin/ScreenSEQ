@@ -5,34 +5,107 @@ from tools.FASTQ import read_FASTQ
 
 import argparse
 
-argParser=argparse.ArgumentParser()
+argParser=argparse.ArgumentParser(description="Scan FASTQ files for target sequences and report flanking adapters")
 argParser.add_argument('seqFile',type=str,help="File of target sequences")
 argParser.add_argument('fastq',type=str,help="FASTQ file")
+argParser.add_argument('--max-hits', type=int, default=100, help="Maximum number of hits to find (default: 100)")
+argParser.add_argument('--max-reads', type=int, default=0, help="Maximum FASTQ reads to process (0=unlimited, default: 0)")
+argParser.add_argument('--min-hit-rate', type=float, default=0.001, help="Minimum hit rate to continue scanning (default: 0.001)")
+argParser.add_argument('--flanking-length', type=int, default=20, help="Length of flanking sequences to extract (default: 20)")
+argParser.add_argument('--verbose', action='store_true', help="Show progress information to stderr")
+argParser.add_argument('--quiet', action='store_true', help="Suppress all non-essential output")
 args=argParser.parse_args()
 
-args.seqFile
+# Validate arguments
+if not args.quiet:
+    print(f"# Scanner starting with parameters: max-hits={args.max_hits}, max-reads={args.max_reads}, min-hit-rate={args.min_hit_rate}", file=sys.stderr)
 
-print(args)
+# Load target sequences
+try:
+    with open(args.seqFile, "r") as f:
+        seqs = [s.strip() for s in f.readlines()]
+    if not args.quiet:
+        print(f"# Loaded {len(seqs)} target sequences from {args.seqFile}", file=sys.stderr)
+except FileNotFoundError:
+    print(f"ERROR: Cannot find sequence file: {args.seqFile}", file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print(f"ERROR: Cannot read sequence file {args.seqFile}: {e}", file=sys.stderr)
+    sys.exit(1)
 
-seqs=[s.strip() for s in open(args.seqFile,"r").readlines()]
-MAX_COUNT=100
-count=0
+# Initialize counters
+hit_count = 0
+reads_processed = 0
+flanking_len = args.flanking_length
 
-for rr in read_FASTQ(args.fastq):
-    if count >= MAX_COUNT:
-        break
+# Main scanning loop with intelligent stopping
+try:
+    for rr in read_FASTQ(args.fastq):
+        reads_processed += 1
         
-    for si in seqs:
-        if count >= MAX_COUNT:
+        # Check read limit
+        if args.max_reads > 0 and reads_processed > args.max_reads:
+            if args.verbose:
+                print(f"# Stopped: reached max reads limit ({args.max_reads})", file=sys.stderr)
             break
             
-        pos=rr.seq.find(si)
-        if pos>-1:
-            print("#SCAN#",si, pos,
-                "5':", rr.seq[(pos-20):pos],
-                "3':", rr.seq[(pos+len(si)):(pos+len(si)+20)]
-                )
-            sys.stdout.flush()
-            count=count+1
+        # Check hit rate every 10,000 reads (after initial warm-up)
+        if reads_processed > 10000 and reads_processed % 10000 == 0:
+            hit_rate = hit_count / reads_processed
+            if hit_rate < args.min_hit_rate:
+                if args.verbose:
+                    print(f"# Stopped: hit rate {hit_rate:.6f} below threshold {args.min_hit_rate}", file=sys.stderr)
+                break
+                
+        # Progress reporting
+        if args.verbose and reads_processed % 50000 == 0:
+            hit_rate = hit_count / reads_processed if reads_processed > 0 else 0
+            print(f"# Progress: {reads_processed} reads processed, {hit_count} hits found, hit rate: {hit_rate:.6f}", file=sys.stderr)
+        
+        # Check if we've found enough hits
+        if hit_count >= args.max_hits:
+            if args.verbose:
+                print(f"# Stopped: reached max hits limit ({args.max_hits})", file=sys.stderr)
+            break
+            
+        # Scan current read for target sequences
+        for si in seqs:
+            if hit_count >= args.max_hits:
+                break
+                
+            pos = rr.seq.find(si)
+            if pos > -1:
+                # Extract flanking sequences
+                start_5p = max(0, pos - flanking_len)
+                end_5p = pos
+                start_3p = pos + len(si)
+                end_3p = min(len(rr.seq), start_3p + flanking_len)
+                
+                seq_5p = rr.seq[start_5p:end_5p]
+                seq_3p = rr.seq[start_3p:end_3p]
+                
+                # Pad sequences if needed
+                if len(seq_5p) < flanking_len:
+                    seq_5p = "N" * (flanking_len - len(seq_5p)) + seq_5p
+                if len(seq_3p) < flanking_len:
+                    seq_3p = seq_3p + "N" * (flanking_len - len(seq_3p))
+                
+                print(f"#SCAN# {si} {pos} 5': {seq_5p} 3': {seq_3p}")
+                sys.stdout.flush()
+                hit_count += 1
+                
+except KeyboardInterrupt:
+    if not args.quiet:
+        print("# Interrupted by user", file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print(f"ERROR: Error processing FASTQ file {args.fastq}: {e}", file=sys.stderr)
+    sys.exit(1)
+
+# Final summary
+if not args.quiet:
+    hit_rate = hit_count / reads_processed if reads_processed > 0 else 0
+    print(f"# Scan complete: {reads_processed} reads processed, {hit_count} hits found", file=sys.stderr)
+    print(f"# Final hit rate: {hit_rate:.6f}", file=sys.stderr)
 
 
