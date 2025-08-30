@@ -67,9 +67,32 @@ ScreenSEQ is a Python3-based pipeline for analyzing sgRNA (single guide RNA) scr
 
 ## Commit Message Format
 
-Use conventional commits with imperative style:
-- `feat: add new parser for custom adapter`
-- `fix: resolve memory allocation issue in QC module`  
-- `refactor: unify WES and WGS run scripts`
-- Limit subject to 50 characters, wrap body at 60 characters
-- Append `#cursor` tag to commit body
+Use conventional commits with imperative style, following project-specific guidelines:
+
+### Format Requirements
+- Use `type: description` or `type(scope): description`
+- Common types: feat, fix, docs, style, refactor, test, chore
+- Limit subject+type+scope to 50 characters or less
+- Wrap body text at roughly 60 character lines
+- Use imperative mood for subject line
+- Include reference to specific files or modules when relevant
+
+### Examples
+```
+fix: resolve memory allocation issue in QC module
+```
+
+```
+refactor: unify WES and WGS run scripts
+
+Create a single set of scripts that can run multiple job
+types using command line options to select type.
+```
+
+```
+chore(conf): update LSF resource parameters for better performance
+```
+
+### Claude Code Commits
+- End commit body with `Co-Authored-By: Claude <noreply@anthropic.com>`
+- For Cursor AI commits, append `#cursor` tag to last line of body
