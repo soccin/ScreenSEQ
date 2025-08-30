@@ -15,9 +15,17 @@ args.seqFile
 print(args)
 
 seqs=[s.strip() for s in open(args.seqFile,"r").readlines()]
+MAX_COUNT=100
+count=0
 
 for rr in read_FASTQ(args.fastq):
+    if count >= MAX_COUNT:
+        break
+        
     for si in seqs:
+        if count >= MAX_COUNT:
+            break
+            
         pos=rr.seq.find(si)
         if pos>-1:
             print("#SCAN#",si, pos,
@@ -25,7 +33,6 @@ for rr in read_FASTQ(args.fastq):
                 "3':", rr.seq[(pos+len(si)):(pos+len(si)+20)]
                 )
             sys.stdout.flush()
+            count=count+1
 
-
-#     print(rr.desc,rr.seq[:25],rr.qual[:25])
 
