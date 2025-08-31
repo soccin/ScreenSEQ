@@ -1,5 +1,7 @@
 # ScreenSEQ
 
+**Version: 2.1.0** | **Release: 2025-08-31**
+
 A Python3-based pipeline for analyzing sgRNA (single guide RNA) screen sequencing data from CRISPR screens.
 
 ## Overview

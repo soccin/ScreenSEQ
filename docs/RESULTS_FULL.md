@@ -15,7 +15,7 @@ The ScreenSeq pipeline is designed for analyzing CRISPR screen sequencing data. 
 
 ## Version Information
 
-- **Pipeline Version**: v1.1.0
+- **Pipeline Version**: v2.1.0
 - **Code Repository**: [ScreenSeq GitHub Repository](https://github.com/soccin/ScreenSEQ)
 
 ## Output Files Overview
@@ -39,6 +39,7 @@ This file contains overall quality control statistics for the entire run. It pro
 | Sample | Sample identifier |
 | Total | Total number of reads |
 | Num.Processed | Number of reads with valid sgRNA sequences |
+| PCT.Processed | Percentage of processed reads (Num.Processed / Total) |
 | Num.Library | Number of reads found in the sgRNA library |
 | PCT.Useable | Percentage of usable reads (Num.Library / Total) |
 
@@ -187,5 +188,5 @@ For technical support or questions about the ScreenSeq pipeline:
 
 ---
 
-*Last updated: [Current Date]*
-*Pipeline Version: v1.1.0*
+*Last updated: [2025-08-31]*
+*Pipeline Version: v2.1.0*
