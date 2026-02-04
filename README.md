@@ -35,6 +35,16 @@ ScreenSEQ processes FASTQ files from CRISPR screening experiments to:
 # Run with custom mapping and parser
 ./runProject.sh mapping_file.txt Parser/parser_5p3p [ARGS]
 
+# Join counts
+mkdir Counts
+mv *___* Counts/
+
+# R1 Only
+Rscript ScreenSEQ/bin/joinCounts.R ScreenSEQ/libraries/Brunello_NoDatesLibFile.csv.gz Counts/
+
+# R1R2
+Rscript ScreenSEQ/bin/joinCountsR1R2.R ScreenSEQ/libraries/Brunello_NoDatesLibFile.csv.gz Counts/
+
 # Perform differential analysis
 Rscript diffAnalysis.R
 
